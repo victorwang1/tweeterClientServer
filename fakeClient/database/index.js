@@ -73,7 +73,7 @@ let findUser = (q = {}) => {
              .sort({ updated: -1 });
 };
 
-let findeTweet = (q = {}) => {
+let findTweet = (q = {}) => {
   return Tweet.find(q)
               .limit(25)
               .sort({ updated: -1 });
@@ -86,5 +86,5 @@ module.exports = {
   saveTweet,
   saveTweets,
   findUser,
-  findeTweet
+  findTweet
 }
