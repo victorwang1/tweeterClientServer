@@ -1,7 +1,7 @@
 var faker = require('faker')
 var newMessage = require('./generateMessage')
 
-const newTweet = (userId, date=new Date(), type="original", at="", parentId=null, tweetId=0) => {
+const newTweet = (userId, date=new Date().valueOf(), type="original", at="", parentId=null, tweetId=0) => {
   return {
     "tweetId": tweetId,
     "userId": userId,

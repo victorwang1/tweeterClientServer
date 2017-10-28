@@ -1,7 +1,7 @@
 const newUser = require('./generateUser.js')
 const newTweet = require('./generateTweet.js')
-const db = require('./database/index.js')
-const psql = require('./index.js')
+const db = require('./database/psql.js')
+const neo = require('./database/neo4j.js')
 
 const randomNum = (min = 0, max = 100) => Math.floor(Math.random() * (max - min))  + min;
 const randomProb = (min = 0, max = 1) => Math.random() * (max - min) + min;
@@ -12,104 +12,128 @@ const tweetsPerUserRange = [2, 10];
 const numOfImpressionsRange = [20, 100];
 const startDate = new Date(2017, 7, 1).valueOf();
 const endDate = new Date(2017, 9, 24).valueOf();
-const oneWeek = 6.048e+8;
-const tenMinutes = 600000;
+const OneWeek = 6.048e+8;
+const OneDay = 8.64e+7;
+const FourDays = 3.456e+8;
+const TenMinutes = 600000;
 
 var currentTime = startDate;
 var tweetCount = 0;
 var userCount = 0;
 
 
-
 // # Step 1. Fake a bunch of users
 var fakeUserList = [];
-var fakeUserObj = {};
-var fakeUsers = (isPublisher=false) => {
+// var fakeUserObj = {};
+var fakeUsers = (isPublisher) => {
   for (var i = 0; i < numOfUsers; i++) {
     var user = newUser(isPublisher);
     fakeUserList.push(user);
-    fakeUserObj[user.handle] = user;
+    // fakeUserObj[user.handle] = user;
   }
 }
 
 
 // # Step 2. Use these fake users to generate a bunch of tweets
-var fakeTweetList = [];
+let count = 1;
 var fakeTweets = (callback) => {
-  fakeUserList.forEach(user => {
-    var numOfTweets = randomNum(...tweetsPerUserRange);
-    for (var i = 0; i < numOfTweets; i++) {
-      var tweet = newTweet(user.handle, randomNum(currentTime, endTime), "original", undefined, undefined, tweetCount++);
-      fakeTweetList.push(tweet);
-      callback && callback(tweet, user);
+
+  var fn = (count) => {
+    console.log(count);
+    db.findUserById(count).then(user => {
+      var numOfTweets = randomNum(...tweetsPerUserRange);
+      let fakeTweetList = [];
+      for (var j = 0; j < numOfTweets; j++) {
+        var tweet = newTweet(count, randomNum(currentTime, endTime), "original", undefined, undefined, tweetCount++);
+        fakeTweetList.push(tweet);
+      }
+      callback && callback(fakeTweetList);
+      fakeTweetList = [];
+    });
+  }
+
+  while (count <= 200000) {
+    var func = (id) => {
+      let num = 0;
+      while (num <= 1000) {
+        fn(id + num);
+        num++;
+      }
     }
-  })
+    let id = count;
+    setTimeout(() => {
+      func(id);
+    }, count * 5);
+    count += 1000;
+  }
+
 }
 
 
 // # Step 3. Users will randomly access tweets and follow the owner of these tweets
 
-var followingStageEnd = currentTime + oneWeek;
-
-var count = 0;
-var simulateInteraction = (tweet, user) => {
+currentTime = startDate + OneWeek;
+endTime = currentTime + OneWeek;
+var simulateInteraction = async (tweetId, userId) => {
   // simulate interactions based on user profile
-  tweet.impressions++;
-  user.likeProb > randomProb() && tweet.likes++;
-  if (user.viewProb > randomProb() && tweet.views++) {
+  var user = await db.findUserById(userId).dataValues;
+  var tasks = [db.incrementTweetImpression(tweetId)];
+
+  user.likeProb > randomProb() && tasks.push(db.incrementTweetLike(tweetId));
+  if (user.viewProb > randomProb() && tasks.push(db.incrementTweetView(tweetId))) {
     if (user.replyProb > randomProb()) {
-      fakeTweetList.push(newTweet(user.handle, randomNum(currentTime, endTime), "reply", "@" + tweet.userId, undefined, tweetCount++));
-      count++;
+      tasks.push(db.saveOneTweet(newTweet(user.handle, randomNum(currentTime, endTime), "reply", "@" + tweet.userId, undefined, tweetCount++)));
     }
     if (user.retweetProb > randomProb()) {
-      fakeTweetList.push(newTweet(user.handle, randomNum(currentTime, endTime), "retweet", undefined, tweet.tweetId, tweetCount++));
-      count++;
+      tasks.push(db.saveOneTweet(newTweet(user.handle, randomNum(currentTime, endTime), "retweet", undefined, tweet.tweetId, tweetCount++)));
     }
+  }
+
+  return await Promise.all(tasks);
+}
+
+var fakeFollows = async () => {
+  for (var userId = 200000; userId <= 700000; userId++) {
+    var tweetId = randomNum(0, 1100000);
+    var ownerId = await db.findTweetById(tweetId).dataValues.userId;
+
+    await Promise.all([neo.addUser(ownerId, userId),
+                       simulateInteraction(tweetId, userId)]);
   }
 }
 
-var fakeFollows = () => {
-  fakeUserList.forEach(user => {
-    var numOfImpressions = randomNum(...numOfImpressionsRange);
-    for (var i = 0; i < numOfImpressions; i++) {
-      var tweet = randomElement(fakeTweetList);
-      var owner = fakeUserObj[tweet.userId];
-
-      simulateInteraction(tweet, user);
-
-      // establish following/follower relationship
-      user.followings.push(owner);
-      owner.followers.push(user);
-    }
-  })
-}
-// fakeFollows();
-// currentTime = followingStageEnd;
-
 // # Step 4. Repeat step 1 to 3 and get the required 0.5M users
 
-// var currentTime = startDate;
-// for (var i = 0; i <= 20000; i++) {
-//   fakeUsers();
+// ####### Fake User #######
+// for (var i = 0; i < 1000; i++) {
+//   fakeUsers(false);
 //   userCount += 100;
-//   var endTime = currentTime + tenMinutes;
-//   fakeTweets();
-//   var endTime = currentTime + tenMinutes;
-//   fakeFollows();
-//
-//   var fakeUserList = [];
-//   for (var user in fakeUserObj) {
-//     fakeUserList.push(fakeUserObj[user]);
-//   }
-//   db.saveUsers(fakeUserList);
-//   db.saveTweets(fakeTweetList);
-//   console.log('There are ' + tweetCount + ' tweets!');
+//   var endTime = currentTime + TenMinutes;
+//   db.saveManyUsers(fakeUserList);
+//   fakeUserList = [];
+//   console.log('There are ' + userCount + ' users!');
 // }
+// ####### Fake User #######
 
-psql.saveOneUser(newUser());
+// ####### Fake Tweets #######
+// currentTime = startDate;
+// var endTime = currentTime + FourDays;
+// fakeTweets((tweets) => {
+//   currentTime += FourDays;
+//   endTime += FourDays;
+//   console.log('>>>>>>>>>>>');
+//   // console.log(tweets);
+//   db.saveManyTweets(tweets);
+// });
+// ####### Fake Tweets #######
+
+// ####### Fake Follows #######
+fakeFollows();
+// ####### Fake Follows #######
+
 
 // # Step 5. Live incoming data -- repeat step 2 over and over again, this time
 //           followers of the user will be notified and interact with the tweet
 
-// currentTime = currentTime + oneWeek;
+// currentTime = currentTime + OneWeek;
 // fakeTweets(simulateInteraction);

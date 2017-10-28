@@ -7,7 +7,7 @@ const newName = () => [faker.Name.firstName(), faker.Name.lastName()];
 
 var existingUsers = {};
 
-const newUser = (isPublisher) => {
+const newUser = (isPublisher=false) => {
   var name = newName();
   var handle = name.map(item => item.toLowerCase()).join('');
 
@@ -29,9 +29,7 @@ const newUser = (isPublisher) => {
     "name": name.join(' '),
     "handle": handle,
     "timeZone": "UTC-8:00",
-    "publisher": randomProb() > 0.95,
-    "followings": [],
-    "followers": [],
+    "publisher": isPublisher,
     "tweets": [],
     "activeTime": randomElement(activeTimes),
     "impressionProb": randomProb(0.2, 1),

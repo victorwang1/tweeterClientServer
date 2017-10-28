@@ -14,23 +14,6 @@ const sequelize = new Sequelize('publishers', 'victorwang', '', {
 // Or you can simply use a connection uri
 // const sequelize = new Sequelize('postgres://user:pass@example.com:5432/dbname');
 
-// sequelize
-//   .authenticate()
-//   .then(() => {
-//     console.log('Connection has been established successfully.');
-//   })
-//   .catch(err => {
-//     console.error('Unable to connect to the database:', err);
-//   });
-//
-// const User = sequelize.define('user', {
-//   firstName: {
-//     type: Sequelize.STRING
-//   },
-//   lastName: {
-//     type: Sequelize.STRING
-//   }
-
 const User = sequelize.define('user', {
   id: {
     type: Sequelize.INTEGER,
@@ -58,7 +41,7 @@ const Tweet = sequelize.define('tweet', {
   },
   userId: { type: Sequelize.INTEGER },
   message: { type: Sequelize.STRING },
-  date: { type: Sequelize.INTEGER },
+  date: { type: Sequelize.BIGINT },
   impressions: { type: Sequelize.INTEGER },
   views: { type: Sequelize.INTEGER },
   likes: { type: Sequelize.INTEGER },
@@ -78,25 +61,25 @@ sequelize.sync();
 
 // # Database Operations
 const saveOneUser = (data) => {
-  User.create(data).then(user => {
+  return User.create(data).then(user => {
     console.log('new user saved!');
   })
 }
 
 const saveOneTweet = (data) => {
-  Tweet.create(data).then(tweet => {
+  return Tweet.create(data).then(tweet => {
     console.log('new tweet saved!');
   })
 }
 
 const saveManyUsers = (dataArray) => {
-  User.bulkCreate(dataArray).then(() => {
+  return User.bulkCreate(dataArray).then(() => {
     console.log('bulk save users successful!');
   });
 }
 
 const saveManyTweets = (dataArray) => {
-  Tweet.bulkCreate(dataArray).then(() => {
+  return Tweet.bulkCreate(dataArray).then(() => {
     console.log('bulk save tweets successful!');
   });
 }
@@ -104,10 +87,16 @@ const saveManyTweets = (dataArray) => {
 const findOneUser = q => User.findOne({ where: q });
 const findOneTweet = q => Tweet.findOne({ where: q });
 
-const findUserById = id => User.findById(id).then(user => {
-  return user.increment('my-integer-field', {by: 2})
-});
+const findUserById = id => User.findById(id);
+const findTweetById = id => Tweet.findById(id);
 
+// const findUserById = id => User.findById(id).then(user => {
+//   return user.increment('my-integer-field', {by: 2})
+// });
+
+const incrementTweetImpression = (id) => Tweet.increment('impressions', { where: { id: id } });
+const incrementTweetView = (id) => Tweet.increment('views', { where: { id: id } });
+const incrementTweetLike = (id) => Tweet.increment('likes', { where: { id: id } });
 
 const updateTweet = (id, data) => {
   Tweet.findOne({ where: { 'id': id } })
@@ -122,5 +111,8 @@ module.exports = {
   findOneUser,
   findOneTweet,
   findUserById,
+  findTweetById,
+  incrementTweetImpression,
+  incrementTweetView,
   updateTweet
 }
