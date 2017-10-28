@@ -74,18 +74,21 @@ var fakeTweets = (callback) => {
 
 currentTime = startDate + OneWeek;
 endTime = currentTime + OneWeek;
-var simulateInteraction = async (tweetId, userId) => {
+var simulateInteraction = async (tweetId, userId, ownerId) => {
   // simulate interactions based on user profile
-  var user = await db.findUserById(userId).dataValues;
+  var user = await db.findUserById(userId)
+                     .then(result => result.dataValues);
   var tasks = [db.incrementTweetImpression(tweetId)];
 
   user.likeProb > randomProb() && tasks.push(db.incrementTweetLike(tweetId));
   if (user.viewProb > randomProb() && tasks.push(db.incrementTweetView(tweetId))) {
     if (user.replyProb > randomProb()) {
-      tasks.push(db.saveOneTweet(newTweet(user.handle, randomNum(currentTime, endTime), "reply", "@" + tweet.userId, undefined, tweetCount++)));
+      tasks.push(db.incrementTweetReply);
+      tasks.push(db.saveOneTweet(newTweet(userId, randomNum(currentTime, endTime), "reply", "@" + ownerId, undefined)));
     }
     if (user.retweetProb > randomProb()) {
-      tasks.push(db.saveOneTweet(newTweet(user.handle, randomNum(currentTime, endTime), "retweet", undefined, tweet.tweetId, tweetCount++)));
+      tasks.push(db.incrementTweetRetweet);
+      tasks.push(db.saveOneTweet(newTweet(userId, randomNum(currentTime, endTime), "retweet", undefined, tweetId)));
     }
   }
 
@@ -95,10 +98,12 @@ var simulateInteraction = async (tweetId, userId) => {
 var fakeFollows = async () => {
   for (var userId = 200000; userId <= 700000; userId++) {
     var tweetId = randomNum(0, 1100000);
-    var ownerId = await db.findTweetById(tweetId).dataValues.userId;
-
+    var ownerId = await db.findTweetById(tweetId)
+                          .then(result => result.dataValues.userId);
+    console.log(userId);
     await Promise.all([neo.addUser(ownerId, userId),
-                       simulateInteraction(tweetId, userId)]);
+                       simulateInteraction(tweetId, userId, ownerId)])
+                 .then(() => console.log(userId));
   }
 }
 

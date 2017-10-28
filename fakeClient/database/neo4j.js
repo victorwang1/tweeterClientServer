@@ -9,17 +9,15 @@ const addUser = (userId) => {
      {id: userId}
   );
 };
-//
-// const addManyUsers = (userIds) => {
-//   var format = idArray => idArray.map(id => ({'id': id}));
-//   return session.run(
-//     `UNWIND $props AS map
-//      CREATE (n)
-//      SET n = map
-//      RETURN n`,
-//      { "props" : format(userIds) }
-//   ).then(result => console.log(result));
-// };
+
+const addManyUsers = (userIds) => {
+  return session.run(
+    `UNWIND $userIds AS id
+     CREATE (a:User {id: id})
+     RETURN a`,
+     { userIds : userIds }
+  ).then(result => console.log(result));
+};
 
 const newFollow = (userId, followerId) => {
   return session.run(
@@ -31,7 +29,7 @@ const newFollow = (userId, followerId) => {
 
 const getFollowers = (userId) => {
   return session.run(
-    `MATCH (user {id: $id})<--(follower)
+    `MATCH (User {id: $id})<--(follower)
      RETURN follower`,
      {id: userId}
   ).then(result => {
@@ -40,24 +38,26 @@ const getFollowers = (userId) => {
   })
 }
 
-// var count = 1;
-// for (var i = 0; i <= 1; i++) {
-//   for (var j = 0; j < 1000; j++) {
-//     var fn = () => {
-//       addUser(count);
-//       count++;
-//     }
-//     setTimeout(fn, j * 15);
-//   }
-// }
-
 var write = async () => {
-  for (var i = 200001; i <= 700000; i++) {
-    await addUser(i);
-    console.log(i);
+  var count = 1;
+  var userIds = [];
+  while (count <= 700001) {
+    if (count % 1000 === 0) {
+      await addManyUsers(userIds);
+      userIds = [];
+    }
+    userIds.push(count);
+    console.log(count);
+    count++;
   }
 }
 
+// write();
+
+// session.run(
+//   `MATCH (a)
+//    RETURN a`
+// ).then(result => console.log(result));
 
 
 module.exports = {

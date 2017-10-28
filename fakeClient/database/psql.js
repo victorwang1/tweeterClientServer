@@ -97,6 +97,8 @@ const findTweetById = id => Tweet.findById(id);
 const incrementTweetImpression = (id) => Tweet.increment('impressions', { where: { id: id } });
 const incrementTweetView = (id) => Tweet.increment('views', { where: { id: id } });
 const incrementTweetLike = (id) => Tweet.increment('likes', { where: { id: id } });
+const incrementTweetReply = (id) => Tweet.increment('replies', { where: { id: id } });
+const incrementTweetRetweet = (id) => Tweet.increment('retweets', { where: { id: id } });
 
 const updateTweet = (id, data) => {
   Tweet.findOne({ where: { 'id': id } })
@@ -114,5 +116,8 @@ module.exports = {
   findTweetById,
   incrementTweetImpression,
   incrementTweetView,
+  incrementTweetLike,
+  incrementTweetReply,
+  incrementTweetRetweet,
   updateTweet
 }
