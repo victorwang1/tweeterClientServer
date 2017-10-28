@@ -66,7 +66,6 @@ let saveTweets = (data) => {
   });
 }
 
-
 let findUser = (q = {}) => {
   return User.find(q)
              .limit()

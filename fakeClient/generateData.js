@@ -2,6 +2,7 @@ const newUser = require('./generateUser.js')
 const newTweet = require('./generateTweet.js')
 const db = require('./database/psql.js')
 const neo = require('./database/neo4j.js')
+const es = require('./database/es.js')
 
 const randomNum = (min = 0, max = 100) => Math.floor(Math.random() * (max - min))  + min;
 const randomProb = (min = 0, max = 1) => Math.random() * (max - min) + min;
@@ -35,40 +36,34 @@ var fakeUsers = (isPublisher) => {
 
 
 // # Step 2. Use these fake users to generate a bunch of tweets
-let count = 1;
-var fakeTweets = (callback) => {
-
-  var fn = (count) => {
-    console.log(count);
-    db.findUserById(count).then(user => {
-      var numOfTweets = randomNum(...tweetsPerUserRange);
-      let fakeTweetList = [];
-      for (var j = 0; j < numOfTweets; j++) {
-        var tweet = newTweet(count, randomNum(currentTime, endTime), "original", undefined, undefined, tweetCount++);
-        fakeTweetList.push(tweet);
-      }
-      callback && callback(fakeTweetList);
-      fakeTweetList = [];
-    });
-  }
-
-  while (count <= 200000) {
-    var func = (id) => {
-      let num = 0;
-      while (num <= 1000) {
-        fn(id + num);
-        num++;
-      }
+var fakeTweets = async () => {
+  var batch = [];
+  var userId = 1;
+  var tweetId = 1;
+  while (userId < 200000) {
+    if (userId % 1000 === 0) {
+      await Promise.all([
+        es.writeTweetsBulk(batch).then(() => console.log(userId)),
+        // db.saveManyTweets(batch)
+      ])
+      endTime = currentTime + OneDay;
+      batch = [];
     }
-    let id = count;
-    setTimeout(() => {
-      func(id);
-    }, count * 5);
-    count += 1000;
+    var numOfTweets = randomNum(...tweetsPerUserRange);
+    for (var i = 0; i < numOfTweets; i++) {
+      var tweet = newTweet(userId, new Date(randomNum(currentTime, endTime)), "original", undefined, undefined);
+      tweet.id = tweetId++;
+      batch.push(tweet);
+      console.log(tweetId);
+    }
+    userId++;
   }
-
 }
 
+currentTime = startDate;
+var endTime = currentTime + OneWeek;
+
+fakeTweets();
 
 // # Step 3. Users will randomly access tweets and follow the owner of these tweets
 
@@ -133,7 +128,7 @@ var fakeFollows = async () => {
 // ####### Fake Tweets #######
 
 // ####### Fake Follows #######
-fakeFollows();
+// fakeFollows();
 // ####### Fake Follows #######
 
 
