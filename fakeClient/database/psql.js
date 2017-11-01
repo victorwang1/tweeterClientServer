@@ -90,10 +90,6 @@ const findOneTweet = q => Tweet.findOne({ where: q });
 const findUserById = id => User.findById(id);
 const findTweetById = id => Tweet.findById(id);
 
-// const findUserById = id => User.findById(id).then(user => {
-//   return user.increment('my-integer-field', {by: 2})
-// });
-
 const incrementTweetImpression = (id) => Tweet.increment('impressions', { where: { id: id } });
 const incrementTweetView = (id) => Tweet.increment('views', { where: { id: id } });
 const incrementTweetLike = (id) => Tweet.increment('likes', { where: { id: id } });

@@ -27,6 +27,18 @@ const newFollow = (userId, followerId) => {
   )
 };
 
+const batchFollow = (userId, followerIdList) => {
+  console.log(followerIdList);
+  return session.run(
+    `UNWIND $followerList AS id2
+     MATCH (a:User { id: $id1 }), (b:User { id: id2 })
+     MERGE (a)-[:FOLLOWS]->(b)
+     RETURN a`,
+     { followerList: followerIdList, id1: userId }
+  ).then(result => console.log(result))
+  .catch(err => console.log(err));
+};
+
 const getFollowers = (userId) => {
   return session.run(
     `MATCH (User {id: $id})<--(follower)
@@ -52,16 +64,15 @@ var write = async () => {
   }
 }
 
+// session.run(`CREATE INDEX ON :User(id);`)
+//        .then(result => console.log(result));
+
+
 // write();
-
-// session.run(
-//   `MATCH (a)
-//    RETURN a`
-// ).then(result => console.log(result));
-
 
 module.exports = {
   addUser,
   newFollow,
+  batchFollow,
   getFollowers
 }
