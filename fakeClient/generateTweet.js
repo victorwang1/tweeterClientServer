@@ -7,7 +7,7 @@ const newTweet = (userId, date=new Date().valueOf(), type="original", at="", par
     "uuid": uuidv4(),
     "userId": userId,
     "message": at + newMessage(),
-    "date": String(date),
+    "date": date,
     "impressions": 0,
     "views": 0,
     "likes": 0,

@@ -17,7 +17,7 @@ const formatAction = (type, tweetId, userId) => ({
   userId: String(userId)
 })
 
-const get = tweetId => axios.get(url + '/' + tweetId)
+const get = tweetId => axios.get(url + '/tweet/' + tweetId)
                             .catch(err => console.log(err));
 const post = tweet => {
   let endpoint = url;
