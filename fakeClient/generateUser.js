@@ -14,7 +14,7 @@ const newUser = (isPublisher=false) => {
   var retries = 0;
   while (existingUsers[handle]) {
     if (retries > 50) {
-      name += '1';
+      name[1] += '1';
       break;
     }
     name = newName();

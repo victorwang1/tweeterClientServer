@@ -8,7 +8,6 @@ const sequelize = new Sequelize('tweeter', 'victorwang', '', {
     min: 0,
     idle: 10000
   }
-
 });
 
 // Or you can simply use a connection uri
@@ -20,7 +19,6 @@ const User = sequelize.define('user', {
     autoIncrement: true,
     primaryKey: true
   },
-  uuid: { type: Sequelize.STRING },
   name: { type: Sequelize.STRING },
   handle: { type: Sequelize.STRING },
   timeZone: { type: Sequelize.STRING },
@@ -51,11 +49,11 @@ const Tweet = sequelize.define('tweet', {
     type: Sequelize.ENUM,
     values: ["original", "reply", "retweet"]
   },
-  parentId: { type: Sequelize.UUID }
+  parentId: { type: Sequelize.INTEGER }
 });
 
-User.hasMany(Tweet, { as: 'tweets' });
-Tweet.belongsTo(User);
+// User.hasMany(Tweet, { as: 'tweets' });
+// Tweet.belongsTo(User);
 
 sequelize.sync();
 

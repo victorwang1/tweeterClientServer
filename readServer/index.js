@@ -1,15 +1,30 @@
-const Consumer = require('sqs-consumer');
+const express = require('express')
+const app = express()
 
-const app = Consumer.create({
-  queueUrl: 'https://sqs.us-east-2.amazonaws.com/675837061856/UserInput',
-  handleMessage: (message, done) => {
-    // do some work with `message`
-    done();
-  }
-});
+app.get('/tweet/:tweetId', (req, res) => {
+  let tweetId = req.params.tweetId;
+  let message = req.body;
+  let attributes = {
+    "tweetId": {
+      DataType: "String",
+      StringValue: tweetId
+    },
+    "type": {
+      DataType: "String",
+      StringValue: "impression"
+    }
+  };
 
-app.on('error', (err) => {
-  console.log(err.message);
-});
+  sqs.send(attributes, message).then(() => {
+    console.log('message in queue!');
+    res.sendStatus(200);
+  });
 
-app.start();
+  const get = tweetId => axios.get(url + '/' + tweetId)
+                              .catch(err => console.log(err));
+})
+
+
+app.listen(3001, () => {
+  console.log('listening on port 3000!')
+})

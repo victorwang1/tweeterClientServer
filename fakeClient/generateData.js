@@ -24,16 +24,20 @@ var userCount = 0;
 
 // # Step 1. Fake a bunch of users
 const fakeUsers = async (isPublisher) => {
-  var batch = [];
-  var userId = 1;
-  while (userId < 200000) {
-    if (!userId % 1000) {
+  let batch = [];
+  let userId = 199000;
+  while (userId <= 200001) {
+    if (userId % 10 === 0) {
+      console.log(batch);
       await psql.saveManyUsers(batch);
       batch = [];
     }
+    userId++;
     batch.push(newUser(isPublisher));
   }
 }
+
+fakeUsers(false);
 
 // # Step 2. Use these fake users to generate a bunch of tweets
 const fakeTweets = async () => {

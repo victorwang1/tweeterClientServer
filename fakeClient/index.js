@@ -47,14 +47,14 @@ const interact = async (ownerId, tweetId) => {
     user.likeProb > randomProb() && post(formatAction('like', tweetId, userId)).then(() => console.log("like!!!"));
     if (user.viewProb > randomProb() && post(formatAction('view', tweetId, userId))) {
       if (user.replyProb > randomProb()) {
-        let tweet = newTweet(userId, new Date(), "reply", "@" + ownerId, undefined);
+        let tweet = newTweet(userId, new Date().valueOf(), "reply", "@" + ownerId, undefined);
         tweet.tweetId = tweetId;
         await post(tweet).then(() => console.log("reply!!!"));
 
         interact(userId, tweet.uuid);
       }
       if (user.retweetProb > randomProb()) {
-        let tweet = newTweet(userId, new Date(), "retweet", undefined, tweetId);
+        let tweet = newTweet(userId, new Date().valueOf(), "retweet", undefined, tweetId);
         tweet.tweetId = tweetId;
         await post(tweet).then(() => console.log("retweet!!!"));
 

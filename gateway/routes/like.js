@@ -24,8 +24,9 @@ router.post('/', (req, res) => {
     }
   };
 
+  res.sendStatus(201);
+  
   sqs.send(attributes, '').then(() => {
-    res.sendStatus(201);
   });
 })
 

@@ -37,4 +37,4 @@ node_modules/
 bower_components/
 
 # API Keys
-aws.js
+config.json
