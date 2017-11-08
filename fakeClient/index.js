@@ -29,10 +29,9 @@ const post = tweet => {
   else if (type === 'reply') endpoint += '/reply/';
   else if (type === 'retweet') endpoint += '/retweet/';
 
-  console.log(endpoint);
+  console.log(type);
 
   return axios.post(endpoint, tweet).then(() => {
-    console.log('POST successful!');
   });
 }
 
@@ -73,7 +72,6 @@ const simulate = async () => {
   for (var i = 0; i < numOfTweets; i++) {
     // batch.push(post(newTweet(userId)));
     let tweet = newTweet(userId);
-    console.log('reached>>>>>>>>>>>>');
     await post(tweet).then(() => console.log("new tweet!!!"));
 
     interact(userId, tweet.uuid);

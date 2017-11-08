@@ -2,29 +2,10 @@ const AWS = require('aws-sdk');
 
 AWS.config.loadFromPath('../config.json');
 var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
-var queueURL = "https://sqs.us-east-2.amazonaws.com/675837061856/UserInput";
 
-const send = (attributes, body) => {
-  var params = {
-    MessageAttributes: attributes || {},
-    MessageBody: JSON.stringify(body),
-    QueueUrl: queueURL
-  };
+const queueURL = "https://sqs.us-east-2.amazonaws.com/675837061856/UserInput";
 
-  return new Promise((resolve, reject) => {
-    sqs.sendMessage(params, (err, data) => {
-      if (err) {
-        console.log("Error", err);
-        reject(err);
-      } else {
-        console.log("Success", data.MessageId);
-        resolve(data);
-      }
-    });
-  });
-}
-
-const fetch = () => {
+module.exports.fetch = () => {
   var params = {
     AttributeNames: [
       "SentTimestamp"
@@ -41,7 +22,7 @@ const fetch = () => {
       if (err) {
         reject(err);
       } else {
-        if (data.Messages) {
+        if (data.Messages && data.Messages[0]) {
           var deleteParams = {
             QueueUrl: queueURL,
             ReceiptHandle: data.Messages[0].ReceiptHandle
@@ -60,9 +41,4 @@ const fetch = () => {
       }
     });
   });
-}
-
-module.exports = {
-  send,
-  fetch
 }

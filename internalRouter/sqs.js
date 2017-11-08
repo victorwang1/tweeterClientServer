@@ -2,13 +2,15 @@ const AWS = require('aws-sdk');
 
 AWS.config.loadFromPath('../config.json');
 var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
-var queueURL = "https://sqs.us-east-2.amazonaws.com/675837061856/UserInput";
 
-const send = (attributes, body) => {
+const clientQueueURL = "https://sqs.us-east-2.amazonaws.com/675837061856/UserInput";
+const publisherQueueURL = "https://sqs.us-east-1.amazonaws.com/575799175191/tweeter";
+
+module.exports.send = (attributes, body) => {
   var params = {
     MessageAttributes: attributes || {},
-    MessageBody: JSON.stringify(body),
-    QueueUrl: queueURL
+    MessageBody: body,
+    QueueUrl: clientQueueURL
   };
 
   return new Promise((resolve, reject) => {
@@ -24,7 +26,7 @@ const send = (attributes, body) => {
   });
 }
 
-const fetch = () => {
+module.exports.fetch = () => {
   var params = {
     AttributeNames: [
       "SentTimestamp"
@@ -33,7 +35,7 @@ const fetch = () => {
     MessageAttributeNames: [
       "All"
     ],
-    QueueUrl: queueURL
+    QueueUrl: publisherQueueURL
   };
 
   return new Promise((resolve, reject) => {
@@ -60,9 +62,4 @@ const fetch = () => {
       }
     });
   });
-}
-
-module.exports = {
-  send,
-  fetch
 }

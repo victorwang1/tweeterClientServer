@@ -4,7 +4,7 @@ const sequelize = new Sequelize('tweeter', 'victorwang', '', {
   dialect: 'postgres',
 
   pool: {
-    max: 5,
+    max: 200,
     min: 0,
     idle: 10000
   }
@@ -49,11 +49,14 @@ const Tweet = sequelize.define('tweet', {
     type: Sequelize.ENUM,
     values: ["original", "reply", "retweet"]
   },
-  parentId: { type: Sequelize.INTEGER }
+  parentId: { type: Sequelize.UUID },
+  publisher: { type: Sequelize.BOOLEAN }
+}, {
+  indexes: [{ fields: ['id'], method: 'BTREE'}]
 });
 
-// User.hasMany(Tweet, { as: 'tweets' });
-// Tweet.belongsTo(User);
+User.hasMany(Tweet, { as: 'tweets' });
+Tweet.belongsTo(User);
 
 sequelize.sync();
 

@@ -4,11 +4,10 @@ const sequelize = new Sequelize('tweeter', 'victorwang', '', {
   dialect: 'postgres',
 
   pool: {
-    max: 5,
+    max: 200,
     min: 0,
     idle: 10000
   }
-
 });
 
 // Or you can simply use a connection uri
@@ -20,7 +19,6 @@ const User = sequelize.define('user', {
     autoIncrement: true,
     primaryKey: true
   },
-  uuid: { type: Sequelize.STRING },
   name: { type: Sequelize.STRING },
   handle: { type: Sequelize.STRING },
   timeZone: { type: Sequelize.STRING },
@@ -51,7 +49,10 @@ const Tweet = sequelize.define('tweet', {
     type: Sequelize.ENUM,
     values: ["original", "reply", "retweet"]
   },
-  parentId: { type: Sequelize.UUID }
+  parentId: { type: Sequelize.UUID },
+  publisher: { type: Sequelize.BOOLEAN }
+}, {
+  indexes: [{ fields: ['id'], method: 'BTREE'}]
 });
 
 User.hasMany(Tweet, { as: 'tweets' });

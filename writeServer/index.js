@@ -1,5 +1,5 @@
 const statsd = require('./statsd.js')
-const sqs = require('../sqs/index.js')
+const sqs = require('./sqs.js')
 const parseData = require('./helpers.js').parseData
 const route = require('./helpers.js').route
 const Consumer = require('sqs-consumer')
@@ -20,44 +20,22 @@ if (cluster.isMaster) {
 
 } else {
 
-  const app = Consumer.create({
-    queueUrl: 'https://sqs.us-east-2.amazonaws.com/675837061856/UserInput',
-    messageAttributeNames: ['All'],
-    waitTimeSeconds: 0,
-    handleMessage: async (message, done) => {
-      if (message.MessageAttributes.type.StringValue === 'impression') {
-        done();
-        return;
-      }
+  const listen = async () => {
+    let { Messages } = await sqs.fetch();
+    if (Messages) {
       let start = Date.now();
-      let payload = parseData(message);
+      let payload = parseData(Messages[0]);
 
-      done();
       await route[payload.type](payload);
 
       let latency = Date.now() - start;
-      statsd.timing(`.write.latency_ms`, latency);
-      statsd.timing(`.write.${payload.type}.latency_ms`, latency);
+      statsd.timing(`.write.speed_ms`, latency);
+      statsd.timing(`.write.${payload.type}.speed_ms`, latency);
     }
-  });
 
-  app.on('error', (err) => {
-    console.log(err.message);
-  });
+  }
 
-  app.start();
+  setInterval(listen, 100);
 
   console.log(`Worker ${process.pid} started`);
 }
-
-const listen = () => {
-  sqs.fetch().then(data => {
-    if (data.Message) {
-      let payload = parseData(data);
-    }
-
-    console.log(data);
-  })
-}
-
-setInterval(listen, 10);

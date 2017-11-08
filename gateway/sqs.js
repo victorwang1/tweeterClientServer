@@ -1,20 +1,25 @@
 const AWS = require('aws-sdk');
 
 AWS.config.loadFromPath('../config.json');
-var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
-var queueURL = "https://sqs.us-east-2.amazonaws.com/675837061856/UserInput";
+const sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+const queueURL = {
+  client: "https://sqs.us-east-2.amazonaws.com/675837061856/UserInput",
+  publisher: "https://sqs.us-east-1.amazonaws.com/575799175191/tweeter"
+}
 
-const send = (attributes, body) => {
+const send = (queue, attributes, body) => {
   var params = {
     DelaySeconds: 0,
     MessageAttributes: attributes || {},
-    MessageBody: JSON.stringify(body),
-    QueueUrl: queueURL
+    MessageBody: body,
+    QueueUrl: queueURL[queue]
   };
 
   return new Promise((resolve, reject) => {
     sqs.sendMessage(params, (err, data) => {
       if (err) {
+        console.log("MessageAttributes", attributes);
+        console.log('body>>>>>>>>>>', body);
         console.log("Error", err);
         reject(err);
       } else {

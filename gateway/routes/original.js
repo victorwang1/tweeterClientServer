@@ -11,7 +11,7 @@ router.get('/:tweetId', (req, res) => {
 router.post('/', (req, res) => {
   let {uuid, userId, date, message} = req.body;
   let attributes = {
-    "tweetId": {
+    "id": {
       DataType: "String",
       StringValue: String(uuid)
     },
@@ -30,7 +30,7 @@ router.post('/', (req, res) => {
   };
 
   res.sendStatus(201);
-  sqs.send(attributes, message).then(() => {
+  sqs.send('client', attributes, message).then(() => {
   });
 })
 

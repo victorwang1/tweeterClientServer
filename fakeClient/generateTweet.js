@@ -14,7 +14,8 @@ const newTweet = (userId, date=new Date().valueOf(), type="original", at="", par
     "replies": 0,
     "retweets": 0,
     "type": type,
-    "parentId": parentId
+    "parentId": parentId,
+    "publisher": false
   };
 }
 
