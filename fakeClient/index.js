@@ -1,9 +1,11 @@
+const newUser = require('./generateUser.js')
 const axios = require('axios')
 const newTweet = require('./generateTweet.js')
 const Queue = require('./helpers/queue.js')
 const neo4j = require('./database/neo4j.js')
 const psql = require('./database/psql.js')
 const url = 'http://localhost:3000'
+
 
 const batchesPerSecond = 10;
 const numOfTweetsRange = [2, 10];
@@ -36,12 +38,18 @@ const post = tweet => {
 }
 
 const interact = async (ownerId, tweetId) => {
-  let followers = await neo4j.getFollowers(ownerId);
+  // let followers = await neo4j.getFollowers(ownerId);
+  let followers = [];
+  for (var i = 0; i < 10; i++) {
+    followers.push(randomNum(0, 700000));
+  }
+
   await get(tweetId).then(() => console.log("impression!!!"));
 
   followers.forEach(async userId => {
 
-    let user = await psql.findUserById(userId);
+    // let user = await psql.findUserById(userId);
+    let user = newUser(false);
 
     user.likeProb > randomProb() && post(formatAction('like', tweetId, userId)).then(() => console.log("like!!!"));
     if (user.viewProb > randomProb() && post(formatAction('view', tweetId, userId))) {
@@ -69,7 +77,7 @@ const simulate = async () => {
   let userId = randomNum(1, 200000);
   let numOfTweets = randomNum(...numOfTweetsRange);
 
-  for (var i = 0; i < numOfTweets; i++) {
+  for (var i = 0; i < 10; i++) {
     // batch.push(post(newTweet(userId)));
     let tweet = newTweet(userId);
     await post(tweet).then(() => console.log("new tweet!!!"));
@@ -78,4 +86,4 @@ const simulate = async () => {
   }
 }
 
-setInterval(simulate, 2000)
+setInterval(simulate, 5000)

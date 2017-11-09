@@ -10,6 +10,8 @@ bluebird.promisifyAll(redis.Multi.prototype)
 const client = redis.createClient()
 
 router.get('/:tweetId', async (req, res) => {
+  console.log('impression!!!');
+
   let start = Date.now();
 
   let tweetId = req.params.tweetId;
@@ -24,11 +26,14 @@ router.get('/:tweetId', async (req, res) => {
     }
   };
 
-  let cachedTweet = await client.hmgetAsync('id', 'userId', 'message', 'date',
-              'impressions', 'views', 'likes', 'replies', 'retweets', 'type');
-
-  console.log('reading from cache');
-  console.log(cachedTweet);
+  try {
+    console.log('reading from cache');
+    let cachedTweet = await client.hmgetAsync('id', 'userId', 'message', 'date',
+    'impressions', 'views', 'likes', 'replies', 'retweets', 'type');
+    console.log(cachedTweet);
+  } catch (err) {
+    console.log(err);
+  }
 
   // let tweet = await psql.findTweetById(tweetId);
 

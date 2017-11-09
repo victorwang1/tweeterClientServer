@@ -10,7 +10,7 @@ module.exports.fetch = () => {
     AttributeNames: [
       "SentTimestamp"
     ],
-    MaxNumberOfMessages: 1,
+    MaxNumberOfMessages: 10,
     MessageAttributeNames: [
       "All"
     ],
@@ -22,18 +22,21 @@ module.exports.fetch = () => {
       if (err) {
         reject(err);
       } else {
-        if (data.Messages && data.Messages[0]) {
-          var deleteParams = {
-            QueueUrl: queueURL,
-            ReceiptHandle: data.Messages[0].ReceiptHandle
+        if (data.Messages && data.Messages.length) {
+          // console.log(data.Messages);
+          resolve(data);
+          let deleteParams = {
+            Entries: data.Messages.map(message => (
+              {
+                Id: message.MessageId,
+                ReceiptHandle: message.ReceiptHandle
+              }
+            )),
+            QueueUrl: queueURL
           };
-          sqs.deleteMessage(deleteParams, (err, result) => {
-            if (err) {
-              console.log("Delete Error", err);
-            } else {
-              resolve(data);
-              console.log("Message Deleted", result);
-            }
+          sqs.deleteMessageBatch(deleteParams, (err, result) => {
+            if (err) console.log(err, err.stack); // an error occurred
+            // else     console.log(data);           // successful response
           });
         } else {
           resolve({});

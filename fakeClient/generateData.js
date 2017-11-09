@@ -37,7 +37,7 @@ const fakeUsers = async (isPublisher) => {
   }
 }
 
-fakeUsers(false);
+// fakeUsers(false);
 
 // # Step 2. Use these fake users to generate a bunch of tweets
 const fakeTweets = async () => {
@@ -107,7 +107,7 @@ const simulateInteraction = async (tweetId, userId, ownerId) => {
 // }
 
 const fakeFollows = async () => {
-  for (let ownerId = 148413; ownerId <= 700000; ownerId++) {
+  for (let ownerId = 359634; ownerId <= 700000; ownerId++) {
     console.log('REACHED>>>>');
     let followerIdList = [];
     for (var i = 0; i < 20; i++) {
@@ -117,6 +117,8 @@ const fakeFollows = async () => {
     await neo.batchFollow(ownerId, followerIdList).then(() => console.log(ownerId));
   }
 }
+
+fakeFollows();
 
 // fakeFollows()
 

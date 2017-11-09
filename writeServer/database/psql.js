@@ -97,6 +97,14 @@ const incrementTweetLike = (id) => Tweet.increment('likes', { where: { id: id } 
 const incrementTweetReply = (id) => Tweet.increment('replies', { where: { id: id } });
 const incrementTweetRetweet = (id) => Tweet.increment('retweets', { where: { id: id } });
 
+const batchIncrement = ({tweetId, impressions, views, likes, replies, retweets}) => {
+  return Tweet.increment({ impressions: impressions,
+                           views: views,
+                           likes: likes,
+                           replies: replies,
+                           retweets: retweets }, { where: { id: tweetId } });
+}
+
 const updateTweet = (id, data) => {
   Tweet.findOne({ where: { 'id': id } })
       .then(tweet => tweet.update(data));
@@ -116,5 +124,6 @@ module.exports = {
   incrementTweetLike,
   incrementTweetReply,
   incrementTweetRetweet,
+  batchIncrement,
   updateTweet
 }
