@@ -28,7 +28,7 @@ router.get('/:tweetId', async (req, res) => {
 
   try {
     console.log('reading from cache');
-    let cachedTweet = await client.hmgetAsync('id', 'userId', 'message', 'date',
+    let cachedTweet = await client.hmgetAsync(tweetId, 'userId', 'message', 'date',
     'impressions', 'views', 'likes', 'replies', 'retweets', 'type');
     console.log(cachedTweet);
   } catch (err) {

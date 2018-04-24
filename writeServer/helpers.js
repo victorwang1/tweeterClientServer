@@ -76,7 +76,7 @@ module.exports.route = {
   },
   reply: async ({tweetId, userId, id, createdAt, content}) => {
     batch({
-      id: id,
+      id: tweetId,
       userId: userId,
       message: content,
       date: createdAt,
@@ -86,10 +86,10 @@ module.exports.route = {
       replies: 0,
       retweets: 0,
       type: 'reply',
-      parentId: tweetId
+      parentId: id
     })
 
-    await client.hmset(id, 'id', id,
+    await client.hmset(id, 'id', tweetId,
                            'userId', userId,
                            'message', content,
                            'date', createdAt,
@@ -99,11 +99,11 @@ module.exports.route = {
                            'replies', 0,
                            'retweets', 0,
                            'type', 'reply',
-                           'parentId', tweetId);
+                           'parentId', id);
   },
   retweet: async ({tweetId, userId, id, createdAt, content}) => {
     batch({
-      id: id,
+      id: tweetId,
       userId: userId,
       message: '',
       date: createdAt,
@@ -113,10 +113,10 @@ module.exports.route = {
       replies: 0,
       retweets: 0,
       type: 'retweet',
-      parentId: tweetId
+      parentId: id
     })
 
-    await client.hmset(id, 'id', id,
+    await client.hmset(id, 'id', tweetId,
                            'userId', userId,
                            'message', content,
                            'date', createdAt,

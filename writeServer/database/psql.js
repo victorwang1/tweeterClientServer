@@ -55,8 +55,8 @@ const Tweet = sequelize.define('tweet', {
   indexes: [{ fields: ['id'], method: 'BTREE'}]
 });
 
-User.hasMany(Tweet, { as: 'tweets' });
-Tweet.belongsTo(User);
+// User.hasMany(Tweet, { as: 'tweets' });
+// Tweet.belongsTo(User);
 
 sequelize.sync();
 

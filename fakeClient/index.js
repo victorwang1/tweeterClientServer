@@ -41,7 +41,7 @@ const interact = async (ownerId, tweetId) => {
   // let followers = await neo4j.getFollowers(ownerId);
   let followers = [];
   for (var i = 0; i < 10; i++) {
-    followers.push(randomNum(0, 700000));
+    followers.push(randomNum(1, 697998));
   }
 
   await get(tweetId).then(() => console.log("impression!!!"));

@@ -22,7 +22,7 @@ const save = (update, insert) => {
 }
 
 const batch = async (payload) => {
-  console.log(payload);
+  // console.log(payload);
   let type = payload.type,
       tweetId = payload.tweetId;
   if (type === 'impressions' ||
@@ -44,6 +44,10 @@ const batch = async (payload) => {
   } else if (type === 'original' ||
              type === 'reply' ||
              type === 'retweet') {
+
+    console.log('IN STORAGE >>>>>> ', storage.insert.length);
+    storage.insert.push(payload);
+
     if (storage.insert.length === 500) {
       let start = Date.now();
 
@@ -51,11 +55,11 @@ const batch = async (payload) => {
       storage.update = {};
       storage.insert = [];
 
+      console.log('REACHED >>>>>>>>>>>>>>>>>');
+
       let latency = Date.now() - start;
       statsd.timing(`.write.batch.speed_ms`, latency);
     }
-    console.log('IN STORAGE >>>>>> ', storage.insert.length);
-    storage.insert.push(payload);
   }
 }
 
